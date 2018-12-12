@@ -1,0 +1,26 @@
+iam_policies:
+  ecs-container-instance:
+    action:
+      - ecs:CreateCluster
+      - ecs:DeregisterContainerInstance
+      - ecs:DiscoverPollEndpoint
+      - ecs:Poll
+      - ecs:RegisterContainerInstance
+      - ecs:StartTelemetrySession
+      - ecs:Submit*
+      - ecr:GetAuthorizationToken
+      - ecr:BatchCheckLayerAvailability
+      - ecr:GetDownloadUrlForLayer
+      - ecr:BatchGetImage
+      - logs:CreateLogStream
+      - logs:PutLogEvents
+
+user_data: |
+  "#!/bin/bash"
+  hostname ${EnvironmentName}-bastion-`/opt/aws/bin/ec2-metadata --instance-id|/usr/bin/awk '{print $2}'`
+  sed '/HOSTNAME/d' /etc/sysconfig/network > /tmp/network && mv -f /tmp/network /etc/sysconfig/network && echo "HOSTNAME=${EnvironmentName}-`/opt/aws/bin/ec2-metadata --instance-id|/usr/bin/awk '{print $2}'`" >>/etc/sysconfig/network && /etc/init.d/network restart
+  mkdir /efs
+  yum install -y nfs-utils
+  mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${FileSystem}.efs.${AWS::Region}.amazonaws.com:/ /efs
+  echo ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=10m >> /etc/ecs/ecs.config
+  echo ECS_IMAGE_MINIMUM_CLEANUP_AGE=5m >> /etc/ecs/ecs.config
