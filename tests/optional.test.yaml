@@ -7,6 +7,9 @@ test_metadata:
 # cluster name is prefixed with environment name
 cluster_name: test
 
+namespaces:
+  - local
+
 ecs_extra_tags:
   Name: test
   Tested: true

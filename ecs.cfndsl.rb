@@ -6,6 +6,13 @@ CloudFormation do
     ClusterName FnSub("${EnvironmentName}-#{cluster_name}") if defined? cluster_name
   }
 
+  namespaces.each do |name|
+    ServiceDiscovery_HttpNamespace("#{name.gsub('.','').gsub('-','').gsub('_','')}HttpNamespace") {
+      Description FnSub("Http Namespace #{name} in the ${EnvironmentName} environment")
+      Name FnSub(name)
+    }
+  end if defined? namespaces and namespaces.any?
+
   if enable_ec2_cluster
 
     Condition('IsScalingEnabled', FnEquals(Ref('EnableScaling'), 'true'))
